@@ -1,3 +1,4 @@
+
 export interface Education {
   id: string;
   school: string;
@@ -6,6 +7,7 @@ export interface Education {
   endDate: string;
   city: string;
   description: string;
+  grade: string; // Added field for CGPA/Percentage
 }
 
 export interface Experience {

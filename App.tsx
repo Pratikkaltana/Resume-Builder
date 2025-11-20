@@ -3,6 +3,7 @@ import Editor from './components/Editor';
 import ResumePreview from './components/ResumePreview';
 import { ResumeData, INITIAL_RESUME_STATE } from './types';
 import Spinner from './components/Spinner';
+import VoiceAssistant from './components/VoiceAssistant';
 
 // Declaration for html2pdf loaded via CDN
 declare var html2pdf: any;
@@ -141,6 +142,12 @@ const App: React.FC = () => {
       {/* Main Content - Two Columns */}
       <main className="flex-1 flex overflow-hidden relative">
         
+        {/* Voice Assistant */}
+        <VoiceAssistant 
+          currentData={resumeData} 
+          onUpdate={(updates) => setResumeData(prev => ({ ...prev, ...updates }))} 
+        />
+
         {/* Left Panel: Editor */}
         <div className={`
           flex-1 md:max-w-[500px] lg:max-w-[600px] p-4 md:p-6 overflow-hidden flex flex-col
@@ -169,7 +176,7 @@ const App: React.FC = () => {
           </div>
           
           {/* Zoom Controls Overlay */}
-          <div className="absolute bottom-6 right-6 bg-white rounded-full shadow-lg p-2 flex gap-2 border border-gray-200 no-print">
+          <div className="absolute bottom-6 right-6 bg-white rounded-full shadow-lg p-2 flex gap-2 border border-gray-200 no-print z-10">
             <button 
               onClick={() => setZoom(z => Math.max(0.4, z - 0.1))}
               className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600"
@@ -188,7 +195,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Mobile Print Fab */}
-          <div className="md:hidden absolute bottom-6 left-6">
+          <div className="md:hidden absolute bottom-24 right-6">
              <button 
               onClick={handleDownloadPdf}
               disabled={isGeneratingPdf}

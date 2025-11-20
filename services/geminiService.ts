@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Experience, ResumeData } from "../types";
+import { Experience, ResumeData, Education, Skill } from "../types";
 
 const getAiClient = () => {
   const apiKey = process.env.API_KEY;
@@ -123,5 +123,72 @@ export const suggestSkills = async (jobTitle: string): Promise<string[]> => {
   } catch (error) {
     console.error("Error suggesting skills:", error);
     return [];
+  }
+};
+
+// Function to process voice commands and return structured updates
+export const processVoiceCommand = async (transcript: string): Promise<{
+  intent: 'update_personal' | 'add_experience' | 'add_education' | 'add_skill' | 'unknown';
+  data: any;
+}> => {
+  const ai = getAiClient();
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: `You are a Resume Assistant. Analyze the user's voice command and extract structured data to update a resume. 
+      
+      Command: "${transcript}"
+      
+      Determine the intent:
+      1. 'update_personal' if they mention name, email, phone, city, job title, or summary.
+      2. 'add_experience' if they mention a job, company, work history.
+      3. 'add_education' if they mention school, degree, university, grade.
+      4. 'add_skill' if they mention skills or technologies.
+      
+      Return JSON matching the intent.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            intent: {
+              type: Type.STRING,
+              enum: ['update_personal', 'add_experience', 'add_education', 'add_skill', 'unknown']
+            },
+            data: {
+              type: Type.OBJECT,
+              description: "The extracted data fields. For personal info, use keys: fullName, email, phone, city, jobTitle, summary, link. For experience: company, jobTitle, startDate, endDate, city, description. For education: school, degree, startDate, endDate, grade, city. For skill: name, level (Beginner/Intermediate/Advanced/Expert).",
+              properties: {
+                fullName: { type: Type.STRING },
+                email: { type: Type.STRING },
+                phone: { type: Type.STRING },
+                city: { type: Type.STRING },
+                link: { type: Type.STRING },
+                jobTitle: { type: Type.STRING },
+                summary: { type: Type.STRING },
+                company: { type: Type.STRING },
+                school: { type: Type.STRING },
+                degree: { type: Type.STRING },
+                startDate: { type: Type.STRING },
+                endDate: { type: Type.STRING },
+                description: { type: Type.STRING },
+                grade: { type: Type.STRING },
+                name: { type: Type.STRING },
+                level: { type: Type.STRING },
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const jsonText = response.text;
+    if (!jsonText) return { intent: 'unknown', data: {} };
+    return JSON.parse(jsonText);
+
+  } catch (error) {
+    console.error("Error processing voice command:", error);
+    return { intent: 'unknown', data: {} };
   }
 };

@@ -1,5 +1,7 @@
 {
   "name": "PratResume",
   "description": "A professional AI-powered resume builder that helps you craft, polish, and format your resume with intelligent content enhancement using Gemini.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "microphone"
+  ]
 }

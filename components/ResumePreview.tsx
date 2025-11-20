@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ResumeData } from '../types';
 
@@ -10,6 +11,12 @@ interface ResumePreviewProps {
 
 const ResumePreview: React.FC<ResumePreviewProps> = ({ data, zoom = 1, id, className = '' }) => {
   const { personalInfo, experience, education, skills, themeColor } = data;
+
+  // Helper to ensure links have protocol
+  const getSafeLink = (link: string) => {
+    if (link.startsWith('http://') || link.startsWith('https://')) return link;
+    return `https://${link}`;
+  };
 
   // Styles using Tailwind arbitrary values for A4 sizing
   // Print styles ensure full width/height and remove scaling transforms that break pagination
@@ -34,10 +41,13 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, zoom = 1, id, class
         
         <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-600">
           {personalInfo.email && (
-            <div className="flex items-center gap-1">
+            <a 
+              href={`mailto:${personalInfo.email}`}
+              className="flex items-center gap-1 hover:text-blue-600 hover:underline transition-colors"
+            >
               <i className="fas fa-envelope text-xs opacity-70"></i>
               <span>{personalInfo.email}</span>
-            </div>
+            </a>
           )}
           {personalInfo.phone && (
             <div className="flex items-center gap-1">
@@ -52,10 +62,15 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, zoom = 1, id, class
             </div>
           )}
           {personalInfo.link && (
-            <div className="flex items-center gap-1">
+            <a 
+              href={getSafeLink(personalInfo.link)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:text-blue-600 hover:underline transition-colors"
+            >
               <i className="fas fa-link text-xs opacity-70"></i>
               <span>{personalInfo.link}</span>
-            </div>
+            </a>
           )}
         </div>
       </div>
@@ -111,8 +126,15 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, zoom = 1, id, class
                       <h4 className="font-bold text-gray-900">{edu.school}</h4>
                       <span className="text-xs font-medium text-gray-500 whitespace-nowrap">{edu.startDate} - {edu.endDate}</span>
                     </div>
-                    <div className="text-sm text-gray-700">{edu.degree}</div>
-                    <div className="text-xs text-gray-500">{edu.city}</div>
+                    <div className="flex justify-between items-center">
+                        <div className="text-sm text-gray-700">{edu.degree}</div>
+                        {edu.grade && (
+                           <div className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
+                             Grade: {edu.grade}
+                           </div>
+                        )}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-0.5">{edu.city}</div>
                   </div>
                 ))}
               </div>
@@ -136,13 +158,6 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, zoom = 1, id, class
               </div>
             </section>
            )}
-           
-           {/* Placeholder for future sections like Languages or Interests */}
-           <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 text-center break-inside-avoid">
-              <p className="text-xs text-blue-600 italic">
-                "Simplicity is the ultimate sophistication."
-              </p>
-           </div>
         </div>
       </div>
       

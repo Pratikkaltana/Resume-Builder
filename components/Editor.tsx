@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ResumeData, Experience, Education, Skill } from '../types';
 import { enhanceDescription, generateResumeSummary, suggestSkills } from '../services/geminiService';
@@ -78,7 +79,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
       ...data,
       education: [
         ...data.education,
-        { id: Date.now().toString(), school: '', degree: '', startDate: '', endDate: '', city: '', description: '' }
+        { id: Date.now().toString(), school: '', degree: '', startDate: '', endDate: '', city: '', description: '', grade: '' }
       ]
     });
   };
@@ -245,6 +246,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                  <InputGroup label="Degree / Major" value={edu.degree} onChange={(v) => updateEducation(index, 'degree', v)} />
                  <InputGroup label="Start Date" value={edu.startDate} onChange={(v) => updateEducation(index, 'startDate', v)} />
                  <InputGroup label="End Date" value={edu.endDate} onChange={(v) => updateEducation(index, 'endDate', v)} />
+                 <InputGroup label="CGPA / Percentage" value={edu.grade} onChange={(v) => updateEducation(index, 'grade', v)} placeholder="e.g. 3.8/4.0 or 90%" />
                  <InputGroup label="City" value={edu.city} onChange={(v) => updateEducation(index, 'city', v)} />
                </div>
              </div>
