@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Editor from './components/Editor';
 import ResumePreview from './components/ResumePreview';
@@ -7,6 +8,59 @@ import VoiceAssistant from './components/VoiceAssistant';
 
 // Declaration for html2pdf loaded via CDN
 declare var html2pdf: any;
+
+const DEMO_DATA: ResumeData = {
+  personalInfo: {
+    fullName: 'Pratima Singh',
+    email: 'pratima.singh@example.com',
+    phone: '+1 (555) 012-3456',
+    city: 'San Francisco, CA',
+    link: 'linkedin.com/in/pratima-singh',
+    jobTitle: 'Senior Product Designer',
+    summary: 'Creative and detail-oriented Product Designer with over 6 years of experience in building user-centric digital products. Proven track record of improving user engagement and streamlining workflows through intuitive design systems. Passionate about accessibility and inclusive design practices.'
+  },
+  experience: [
+    {
+      id: '1',
+      company: 'TechFlow Solutions',
+      jobTitle: 'Senior Product Designer',
+      startDate: '06/2021',
+      endDate: 'Present',
+      city: 'San Francisco, CA',
+      description: '• Led the redesign of the core SaaS platform, resulting in a 25% increase in user retention.\n• Mentored a team of 3 junior designers and established a unified design system.\n• Conducted user research and usability testing to validate new features.'
+    },
+    {
+      id: '2',
+      company: 'Creative Pulse',
+      jobTitle: 'UI/UX Designer',
+      startDate: '03/2018',
+      endDate: '05/2021',
+      city: 'Austin, TX',
+      description: '• Designed mobile-first interfaces for e-commerce clients, improving conversion rates by 15%.\n• Collaborated closely with developers to ensure pixel-perfect implementation of designs.\n• Created interactive prototypes using Figma and Protopie for stakeholder presentations.'
+    }
+  ],
+  education: [
+    {
+      id: '1',
+      school: 'California College of the Arts',
+      degree: 'BFA in Interaction Design',
+      startDate: '09/2014',
+      endDate: '05/2018',
+      city: 'San Francisco, CA',
+      grade: '3.9 GPA',
+      description: ''
+    }
+  ],
+  skills: [
+    { id: '1', name: 'Figma', level: 'Expert' },
+    { id: '2', name: 'Prototyping', level: 'Expert' },
+    { id: '3', name: 'User Research', level: 'Advanced' },
+    { id: '4', name: 'HTML/CSS', level: 'Intermediate' },
+    { id: '5', name: 'Design Systems', level: 'Advanced' }
+  ],
+  themeColor: '#2563eb',
+  layoutDensity: 'comfortable'
+};
 
 const App: React.FC = () => {
   // Initialize state from localStorage if available
@@ -80,8 +134,21 @@ const App: React.FC = () => {
     }
   };
 
+  const handleLoadDemo = () => {
+    if (window.confirm("This will overwrite your current data with a demo resume. Continue?")) {
+      setResumeData(DEMO_DATA);
+    }
+  };
+
   const handleThemeChange = (color: string) => {
     setResumeData(prev => ({ ...prev, themeColor: color }));
+  };
+
+  const toggleDensity = () => {
+    setResumeData(prev => ({
+      ...prev,
+      layoutDensity: prev.layoutDensity === 'compact' ? 'comfortable' : 'compact'
+    }));
   };
 
   const colors = ['#2563eb', '#0f172a', '#dc2626', '#16a34a', '#9333ea', '#ea580c'];
@@ -99,6 +166,24 @@ const App: React.FC = () => {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-4">
+           <button 
+            onClick={handleLoadDemo}
+            className="text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+          >
+            Load Demo
+          </button>
+          
+          <div className="flex items-center gap-2 mx-2 border-r border-l border-gray-200 px-4">
+             <button 
+              onClick={toggleDensity}
+              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium"
+              title="Toggle Layout Density"
+             >
+               <i className={`fas ${resumeData.layoutDensity === 'compact' ? 'fa-compress-alt' : 'fa-expand-alt'}`}></i>
+               {resumeData.layoutDensity === 'compact' ? 'Compact' : 'Comfortable'}
+             </button>
+          </div>
+
           <div className="flex items-center gap-2 mr-4 border-r border-gray-200 pr-4">
             <span className="text-xs font-semibold text-gray-400 uppercase">Theme</span>
             <div className="flex gap-1">

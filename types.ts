@@ -42,6 +42,7 @@ export interface ResumeData {
   experience: Experience[];
   skills: Skill[];
   themeColor: string;
+  layoutDensity: 'comfortable' | 'compact';
 }
 
 export const INITIAL_RESUME_STATE: ResumeData = {
@@ -57,5 +58,6 @@ export const INITIAL_RESUME_STATE: ResumeData = {
   education: [],
   experience: [],
   skills: [],
-  themeColor: '#2563eb'
+  themeColor: '#2563eb',
+  layoutDensity: 'comfortable'
 };

@@ -52,6 +52,28 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
     setLoadingSection(null);
   };
 
+  // Reordering Helpers
+  const moveItem = (section: 'experience' | 'education' | 'skills', index: number, direction: 'up' | 'down') => {
+    const list = [...data[section]] as any[];
+    if (direction === 'up' && index > 0) {
+      [list[index], list[index - 1]] = [list[index - 1], list[index]];
+    } else if (direction === 'down' && index < list.length - 1) {
+      [list[index], list[index + 1]] = [list[index + 1], list[index]];
+    }
+    onChange({ ...data, [section]: list });
+  };
+
+  // Text Helper
+  const addBullet = (section: 'experience' | 'education', index: number) => {
+    // @ts-ignore
+    const currentText = data[section][index].description || '';
+    const newText = currentText ? `${currentText}\n• ` : '• ';
+    
+    const list = [...data[section]] as any[];
+    list[index] = { ...list[index], description: newText };
+    onChange({ ...data, [section]: list });
+  };
+
   // CRUD for Arrays
   const addExperience = () => {
     onChange({
@@ -126,6 +148,27 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
     </button>
   );
 
+  const MoveControls = ({ section, index, length }: { section: 'experience' | 'education' | 'skills', index: number, length: number }) => (
+    <div className="flex gap-1 mr-2">
+      <button 
+        onClick={() => moveItem(section, index, 'up')}
+        disabled={index === 0}
+        className="p-1 text-gray-400 hover:text-blue-600 disabled:opacity-30 disabled:hover:text-gray-400 transition-colors"
+        title="Move Up"
+      >
+        <i className="fas fa-arrow-up"></i>
+      </button>
+      <button 
+        onClick={() => moveItem(section, index, 'down')}
+        disabled={index === length - 1}
+        className="p-1 text-gray-400 hover:text-blue-600 disabled:opacity-30 disabled:hover:text-gray-400 transition-colors"
+        title="Move Down"
+      >
+        <i className="fas fa-arrow-down"></i>
+      </button>
+    </div>
+  );
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 h-full flex flex-col overflow-hidden">
       {/* Tabs */}
@@ -183,14 +226,17 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             
             {data.experience.map((exp, index) => (
               <div key={exp.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50 relative group">
-                <button 
-                  onClick={() => removeExperience(index)}
-                  className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-2"
-                >
-                  <i className="fas fa-trash"></i>
-                </button>
+                <div className="absolute top-2 right-2 flex items-center">
+                  <MoveControls section="experience" index={index} length={data.experience.length} />
+                  <button 
+                    onClick={() => removeExperience(index)}
+                    className="text-gray-400 hover:text-red-500 p-1"
+                  >
+                    <i className="fas fa-trash"></i>
+                  </button>
+                </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 mt-4">
                   <InputGroup label="Company" value={exp.company} onChange={(v) => updateExperience(index, 'company', v)} />
                   <InputGroup label="Job Title" value={exp.jobTitle} onChange={(v) => updateExperience(index, 'jobTitle', v)} />
                   <InputGroup label="Start Date" value={exp.startDate} onChange={(v) => updateExperience(index, 'startDate', v)} placeholder="MM/YYYY" />
@@ -200,7 +246,15 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-end">
-                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                    <div className="flex items-center gap-2">
+                       <label className="block text-sm font-medium text-gray-700">Description</label>
+                       <button 
+                        onClick={() => addBullet('experience', index)}
+                        className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-0.5 rounded border border-gray-300 transition-colors"
+                       >
+                         + Bullet
+                       </button>
+                    </div>
                     <button 
                       onClick={() => handleEnhanceExperience(index, exp.description)}
                       disabled={loadingSection === `exp-${index}`}
@@ -234,14 +288,17 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
            
            {data.education.map((edu, index) => (
              <div key={edu.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50 relative group">
-               <button 
-                 onClick={() => removeEducation(index)}
-                 className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-2"
-               >
-                 <i className="fas fa-trash"></i>
-               </button>
+                <div className="absolute top-2 right-2 flex items-center">
+                  <MoveControls section="education" index={index} length={data.education.length} />
+                  <button 
+                    onClick={() => removeEducation(index)}
+                    className="text-gray-400 hover:text-red-500 p-1"
+                  >
+                    <i className="fas fa-trash"></i>
+                  </button>
+                </div>
                
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 mt-4">
                  <InputGroup label="School / University" value={edu.school} onChange={(v) => updateEducation(index, 'school', v)} />
                  <InputGroup label="Degree / Major" value={edu.degree} onChange={(v) => updateEducation(index, 'degree', v)} />
                  <InputGroup label="Start Date" value={edu.startDate} onChange={(v) => updateEducation(index, 'startDate', v)} />
@@ -278,6 +335,10 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             <div className="grid grid-cols-1 gap-2">
               {data.skills.map((skill, index) => (
                 <div key={skill.id} className="flex items-center gap-2 bg-gray-50 p-2 rounded border border-gray-200">
+                   <div className="flex gap-1 mr-1">
+                      <button onClick={() => moveItem('skills', index, 'up')} disabled={index === 0} className="text-gray-400 hover:text-blue-600 disabled:opacity-30 text-xs px-1"><i className="fas fa-arrow-up"></i></button>
+                      <button onClick={() => moveItem('skills', index, 'down')} disabled={index === data.skills.length - 1} className="text-gray-400 hover:text-blue-600 disabled:opacity-30 text-xs px-1"><i className="fas fa-arrow-down"></i></button>
+                   </div>
                    <div className="flex-1">
                       <input 
                         className="w-full bg-transparent border-none focus:ring-0 text-sm font-medium"
