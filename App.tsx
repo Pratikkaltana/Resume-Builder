@@ -2,11 +2,33 @@ import React, { useState, useEffect } from 'react';
 import Editor from './components/Editor';
 import ResumePreview from './components/ResumePreview';
 import { ResumeData, INITIAL_RESUME_STATE } from './types';
+import Spinner from './components/Spinner';
+
+// Declaration for html2pdf loaded via CDN
+declare var html2pdf: any;
 
 const App: React.FC = () => {
-  const [resumeData, setResumeData] = useState<ResumeData>(INITIAL_RESUME_STATE);
+  // Initialize state from localStorage if available
+  const [resumeData, setResumeData] = useState<ResumeData>(() => {
+    try {
+      const savedData = localStorage.getItem('pratResumeData');
+      if (savedData) {
+        return JSON.parse(savedData);
+      }
+    } catch (error) {
+      console.error('Failed to load resume data from storage:', error);
+    }
+    return INITIAL_RESUME_STATE;
+  });
+
   const [zoom, setZoom] = useState(0.8);
   const [activeView, setActiveView] = useState<'editor' | 'preview'>('editor');
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  // Save to localStorage whenever resumeData changes
+  useEffect(() => {
+    localStorage.setItem('pratResumeData', JSON.stringify(resumeData));
+  }, [resumeData]);
 
   // Adjust initial zoom based on screen width
   useEffect(() => {
@@ -20,13 +42,40 @@ const App: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownloadPdf = async () => {
+    const element = document.getElementById('resume-pdf-target');
+    if (!element) return;
+    
+    setIsGeneratingPdf(true);
+    const filename = `${resumeData.personalInfo.fullName.replace(/[^a-z0-9]/gi, '_') || 'Resume'}.pdf`;
+
+    const opt = {
+      margin: 0,
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      // Check if html2pdf is loaded
+      if (typeof html2pdf === 'undefined') {
+        alert('PDF generator is loading, please try again in a moment.');
+        return;
+      }
+      await html2pdf().set(opt).from(element).save();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const handleReset = () => {
-    if (window.confirm("Are you sure you want to clear all data?")) {
+    if (window.confirm("Are you sure you want to clear all data? This action cannot be undone.")) {
       setResumeData(INITIAL_RESUME_STATE);
+      localStorage.removeItem('pratResumeData');
     }
   };
 
@@ -69,10 +118,12 @@ const App: React.FC = () => {
             Reset
           </button>
           <button 
-            onClick={handlePrint} 
-            className="bg-gray-900 hover:bg-black text-white px-5 py-2 rounded-full text-sm font-medium transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+            onClick={handleDownloadPdf} 
+            disabled={isGeneratingPdf}
+            className="bg-gray-900 hover:bg-black text-white px-5 py-2 rounded-full text-sm font-medium transition-all shadow-lg hover:shadow-xl flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait"
           >
-            <i className="fas fa-download"></i> Save as PDF
+             {isGeneratingPdf ? <Spinner /> : <i className="fas fa-download"></i>}
+             {isGeneratingPdf ? 'Generating...' : 'Download PDF'}
           </button>
         </div>
 
@@ -105,12 +156,16 @@ const App: React.FC = () => {
           ${activeView === 'editor' ? 'hidden md:flex' : 'flex'}
           print:block print:p-0 print:bg-white print:w-full print:h-full print:absolute print:top-0 print:left-0 print:z-50
         `}>
-          <div className="print-only w-full h-full hidden">
-            {/* This is just to force Tailwind to include print classes properly if purged weirdly */}
-            <ResumePreview data={resumeData} zoom={1} />
-          </div>
+          {/* Interactive Preview (Scaled) */}
           <div className="no-print transition-all duration-300 ease-in-out">
              <ResumePreview data={resumeData} zoom={zoom} />
+          </div>
+
+          {/* Hidden Target for PDF Generation - Rendered off-screen but visible to DOM for html2canvas */}
+          <div className="absolute top-0 left-[-9999px] w-[210mm]">
+            <div id="resume-pdf-target">
+               <ResumePreview data={resumeData} zoom={1} className="shadow-none" />
+            </div>
           </div>
           
           {/* Zoom Controls Overlay */}
@@ -135,10 +190,11 @@ const App: React.FC = () => {
           {/* Mobile Print Fab */}
           <div className="md:hidden absolute bottom-6 left-6">
              <button 
-              onClick={handlePrint}
+              onClick={handleDownloadPdf}
+              disabled={isGeneratingPdf}
               className="w-12 h-12 bg-blue-600 text-white rounded-full shadow-xl flex items-center justify-center no-print z-50"
             >
-              <i className="fas fa-print"></i>
+              {isGeneratingPdf ? <Spinner /> : <i className="fas fa-download"></i>}
             </button>
           </div>
         </div>

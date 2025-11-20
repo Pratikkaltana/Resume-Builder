@@ -4,19 +4,23 @@ import { ResumeData } from '../types';
 interface ResumePreviewProps {
   data: ResumeData;
   zoom?: number;
+  id?: string;
+  className?: string;
 }
 
-const ResumePreview: React.FC<ResumePreviewProps> = ({ data, zoom = 1 }) => {
+const ResumePreview: React.FC<ResumePreviewProps> = ({ data, zoom = 1, id, className = '' }) => {
   const { personalInfo, experience, education, skills, themeColor } = data;
 
   // Styles using Tailwind arbitrary values for A4 sizing
+  // Print styles ensure full width/height and remove scaling transforms that break pagination
   return (
     <div 
-      className="bg-white shadow-2xl mx-auto print:shadow-none print:mx-0 overflow-hidden relative"
+      id={id}
+      className={`bg-white shadow-2xl mx-auto print:shadow-none print:mx-0 print:overflow-visible overflow-hidden relative ${className}`}
       style={{
         width: '210mm',
         minHeight: '297mm',
-        transform: `scale(${zoom})`,
+        transform: zoom === 1 ? 'none' : `scale(${zoom})`,
         transformOrigin: 'top center',
         color: '#334155' // Slate-700
       }}
@@ -60,7 +64,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, zoom = 1 }) => {
         {/* Main Column */}
         <div className="flex-1 space-y-6">
           {personalInfo.summary && (
-            <section>
+            <section className="break-inside-avoid">
               <h3 className="text-xs font-bold uppercase tracking-widest mb-3 pb-1 border-b border-gray-200 flex items-center gap-2" style={{ color: themeColor }}>
                 <span className="bg-gray-100 p-1 rounded"><i className="fas fa-user"></i></span> Profile
               </h3>
@@ -77,7 +81,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, zoom = 1 }) => {
               </h3>
               <div className="space-y-5">
                 {experience.map((exp) => (
-                  <div key={exp.id}>
+                  <div key={exp.id} className="break-inside-avoid">
                     <div className="flex justify-between items-baseline">
                       <h4 className="font-bold text-gray-900">{exp.jobTitle}</h4>
                       <span className="text-xs font-medium text-gray-500 whitespace-nowrap">{exp.startDate} - {exp.endDate}</span>
@@ -96,13 +100,13 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, zoom = 1 }) => {
           )}
 
           {education.length > 0 && (
-            <section>
+            <section className="break-inside-avoid">
                <h3 className="text-xs font-bold uppercase tracking-widest mb-4 pb-1 border-b border-gray-200 flex items-center gap-2" style={{ color: themeColor }}>
                 <span className="bg-gray-100 p-1 rounded"><i className="fas fa-graduation-cap"></i></span> Education
               </h3>
               <div className="space-y-4">
                 {education.map((edu) => (
-                  <div key={edu.id}>
+                  <div key={edu.id} className="break-inside-avoid">
                      <div className="flex justify-between items-baseline">
                       <h4 className="font-bold text-gray-900">{edu.school}</h4>
                       <span className="text-xs font-medium text-gray-500 whitespace-nowrap">{edu.startDate} - {edu.endDate}</span>
@@ -119,7 +123,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, zoom = 1 }) => {
         {/* Side Column */}
         <div className="w-1/3 space-y-6">
            {skills.length > 0 && (
-            <section>
+            <section className="break-inside-avoid">
               <h3 className="text-xs font-bold uppercase tracking-widest mb-4 pb-1 border-b border-gray-200 flex items-center gap-2" style={{ color: themeColor }}>
                 <span className="bg-gray-100 p-1 rounded"><i className="fas fa-tools"></i></span> Skills
               </h3>
@@ -134,7 +138,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, zoom = 1 }) => {
            )}
            
            {/* Placeholder for future sections like Languages or Interests */}
-           <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 text-center">
+           <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 text-center break-inside-avoid">
               <p className="text-xs text-blue-600 italic">
                 "Simplicity is the ultimate sophistication."
               </p>
